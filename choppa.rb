@@ -11,22 +11,50 @@ class ChoppaProcessor
   end
   
   def process!
-    return unless @doc.at('//body/outline[@text="[daily]"]')
+    @doc.xpath('//*[@text="[daily]"]/*[@type="rss"]').each do |feed|
+      daily_groups.each {|node| node.add_child(feed.clone)}
+    end
 
-    @doc.xpath('//body/outline[@text="[daily]"]/outline[@type="rss"]').each do |outline|
-      daily_nodes.each {|node| node.add_child(outline.clone)}
+    offset = 0
+    
+    @doc.xpath('//*[@text="[twice weekly]"]/*[@type="rss"]').each do |feed|
+      twice_weekly_groups(offset).each {|node| node.add_child(feed.clone)}
+      offset = (offset + 1) % 7
+    end
+    
+    @doc.xpath('//*[@text="[every other day]"]/*[@type="rss"]').each do |feed|
+      every_other_day_groups(offset).each {|node| node.add_child(feed.clone)}
+      offset = (offset + 1) % 7
     end
   end
   
   private
   
-  def daily_nodes
-    days = %w(Måndag Tisdag Onsdag Torsdag Fredag Lördag Söndag)
-    (1..days.size).zip(days).map do |day_parts|
-      name = day_parts.join(' ')
-      @doc.at(%{//body/outline[@text="#{name}"]}) ||
-        @doc.at('body').add_child(
-          %{<outline text="#{name}" title="#{name}" />}).first
+  def daily_groups
+    days.map do |name|
+      find_or_create_group(name)
     end
+  end
+  
+  def twice_weekly_groups(offset)
+    days.values_at(offset, (3 + offset) % 7).map do |name|
+      find_or_create_group(name)
+    end
+  end
+  
+  def every_other_day_groups(offset)
+    days.values_at(*((0..3).map {|i| (i * 2 + offset) % 7})).map do |name|
+      find_or_create_group(name)
+    end
+  end
+  
+  def find_or_create_group(name)
+    @doc.at(%{//*[@text="#{name}"]}) || @doc.at('body').add_child(
+      %{<outline text="#{name}" title="#{name}" />}).first
+  end
+  
+  def days(*pick)
+    @days ||= (1..7).zip(%w(Måndag Tisdag Onsdag Torsdag Fredag Lördag 
+      Söndag)).map {|d| d.join(' ')}
   end
 end
