@@ -54,7 +54,7 @@ class ChoppaProcessor
   end
   
   def days(*pick)
-    @days ||= (1..7).zip(%w(Måndag Tisdag Onsdag Torsdag Fredag Lördag 
-      Söndag)).map {|d| d.join(' ')}
+    @days ||= (1..7).zip(%w(Monday Tuesday Wednesday Thursday Friday
+      Saturday Sunday)).map {|d| d.join(' ')}
   end
 end

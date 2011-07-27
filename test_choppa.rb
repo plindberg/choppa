@@ -20,8 +20,8 @@ class TestChoppa < Test::Unit::TestCase
 
     assert_equal(1, doc.xpath('/opml/body/outline[@text="[daily]"]').count)
     
-    days = (1..7).zip(%w(Måndag Tisdag Onsdag Torsdag Fredag Lördag Söndag)
-      ).map {|x| x * ' '}
+    days = (1..7).zip(%w(Monday Tuesday Wednesday Thursday Friday Saturday
+      Sunday)).map {|x| x * ' '}
     days.each do |day|
       assert_equal(1, doc.xpath("/opml/body/outline[@text='#{day}']").count)
       assert_equal(1, doc.xpath(
@@ -41,7 +41,7 @@ class TestChoppa < Test::Unit::TestCase
     assert_equal(1, doc.xpath(
       '/opml/body/outline[@text="[twice weekly]"]').count)
     
-    ['1 Måndag', '4 Torsdag'].each do |day|
+    ['1 Monday', '4 Thursday'].each do |day|
       assert_equal(1, doc.xpath("/opml/body/outline[@text='#{day}']").count)
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='Lifehacker']").count)
@@ -55,15 +55,15 @@ class TestChoppa < Test::Unit::TestCase
     
     doc = processor.doc
     
-    ['1 Måndag', '4 Torsdag'].each do |day|
+    ['1 Monday', '4 Thursday'].each do |day|
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='Selby']").count)
     end
-    ['2 Tisdag', '5 Fredag'].each do |day|
+    ['2 Tuesday', '5 Friday'].each do |day|
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='ISO50']").count)
     end
-    ['5 Fredag', '1 Måndag'].each do |day|
+    ['5 Friday', '1 Monday'].each do |day|
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='TABlog']").count)
     end
@@ -76,11 +76,11 @@ class TestChoppa < Test::Unit::TestCase
     
     doc = processor.doc
 
-    ['1 Måndag', '3 Onsdag', '5 Fredag', '7 Söndag'].each do |day|
+    ['1 Monday', '3 Wednesday', '5 Friday', '7 Sunday'].each do |day|
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='Mavenist']").count)
     end
-    ['2 Tisdag', '4 Torsdag', '6 Lördag', '1 Måndag'].each do |day|
+    ['2 Tuesday', '4 Thursday', '6 Saturday', '1 Monday'].each do |day|
       assert_equal(1, doc.xpath(
         "//*[@text='#{day}']/outline[@text='Thoughtful']").count)
     end
