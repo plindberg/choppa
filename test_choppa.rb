@@ -1,17 +1,18 @@
 # coding: utf-8
 
 require "test/unit"
+require "minitest/spec"
 require "./choppa"
 
-class TestChoppa < Test::Unit::TestCase
+describe ChoppaProcessor do
 
-  def test_empty_opml_should_remain_empty
+  it 'does nothing with an empty OPML' do
     processor = ChoppaProcessor.new(build_opml)
     processor.process!
     assert_equal(0, processor.doc.xpath('/opml/body/*').count)
   end
   
-  def test_two_daily_feeds_should_be_added_to_groups_for_all_days
+  it 'sorts two daily feeds into groups for every day of the week' do
     processor = ChoppaProcessor.new(
       build_opml('[daily]' => %w(Tesugen BLDGBLOG)))
     processor.process!
@@ -31,7 +32,7 @@ class TestChoppa < Test::Unit::TestCase
     end
   end
   
-  def test_a_twice_weekly_feed_should_be_added_to_monday_and_thursday
+  it 'adds a twice weekly feed to groups for Monday and Thursday' do
     processor = ChoppaProcessor.new(
       build_opml('[twice weekly]' => %w(Lifehacker)))
     processor.process!
@@ -48,7 +49,7 @@ class TestChoppa < Test::Unit::TestCase
     end
   end
   
-  def test_many_twice_weekly_feeds_should_be_added_to_different_days
+  it 'adds a bunch of twice weekly feeds to groups for different days' do
     processor = ChoppaProcessor.new(
       build_opml('[twice weekly]' => %w(Selby ISO50 Waxy Dezeen TABlog)))
     processor.process!
@@ -69,7 +70,7 @@ class TestChoppa < Test::Unit::TestCase
     end
   end
   
-  def test_feeds_for_every_other_day_are_added_to_different_days
+  it 'adds every-other-day feeds to groups for different days' do
     processor = ChoppaProcessor.new(
       build_opml('[every other day]' => %w(Mavenist Thoughtful)))
     processor.process!
@@ -86,13 +87,48 @@ class TestChoppa < Test::Unit::TestCase
     end
   end
   
+  it 'discards day groups from previous runs' do
+    processor = ChoppaProcessor.new(
+      build_opml('[twice weekly]' => %w(Mymarkup), '2 Tuesday' => %w(Mymarkup),
+        '[every other day]' => %w(POKE), '5 Friday' => %w(POKE)))
+    processor.process!
+    
+    doc = processor.doc
+
+    assert_equal(0, doc.xpath("//*[@text='2 Tuesday']/outline[@text='Mymarkup']").count)
+    assert_equal(0, doc.xpath("//*[@text='5 Friday']/outline[@text='POKE']").count)
+
+    ['1 Monday', '4 Thursday'].each do |day|
+      assert_equal(1, doc.xpath(
+        "//*[@text='#{day}']/outline[@text='Mymarkup']").count)
+    end
+    ['2 Tuesday', '4 Thursday', '6 Saturday', '1 Monday'].each do |day|
+      assert_equal(1, doc.xpath(
+        "//*[@text='#{day}']/outline[@text='POKE']").count)
+    end
+  end
+
+  it 'preserves day groups for feeds not in twice daily or every other day' do
+    processor = ChoppaProcessor.new(
+      build_opml('2 Tuesday' => %w(Mymarkup), '5 Friday' => %w(Mymarkup)))
+    processor.process!
+
+    doc = processor.doc
+
+    ['2 Tuesday', '5 Friday'].each do |day|
+      assert_equal(1, doc.xpath("/opml/body/outline[@text='#{day}']").count)
+      assert_equal(1, doc.xpath(
+        "//*[@text='#{day}']/outline[@text='Mymarkup']").count)
+    end
+  end
+
   private
   
   def build_opml(feeds = {})
     Nokogiri::XML::Builder.new do |xml|
       xml.opml {
         xml.head {
-          xml.title "Steve subscriptions in Google Reader"
+          xml.title "Choppa them Google Reader feeds"
         }
         xml.body {
           feeds.each do |group, feed_names|

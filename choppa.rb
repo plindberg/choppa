@@ -18,11 +18,13 @@ class ChoppaProcessor
     offset = 0
     
     @doc.xpath('//*[@text="[twice weekly]"]/*[@type="rss"]').each do |feed|
+      remove_from_all_groups(feed)
       twice_weekly_groups(offset).each {|node| node.add_child(feed.clone)}
       offset = (offset + 1) % 7
     end
     
     @doc.xpath('//*[@text="[every other day]"]/*[@type="rss"]').each do |feed|
+      remove_from_all_groups(feed)
       every_other_day_groups(offset).each {|node| node.add_child(feed.clone)}
       offset = (offset + 1) % 7
     end
@@ -39,6 +41,12 @@ class ChoppaProcessor
   def twice_weekly_groups(offset)
     days.values_at(offset, (3 + offset) % 7).map do |name|
       find_or_create_group(name)
+    end
+  end
+
+  def remove_from_all_groups(feed)
+    daily_groups.each do |node|
+      node.xpath("//outline[@htmlUrl='#{feed['htmlUrl']}']").remove
     end
   end
   

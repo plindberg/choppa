@@ -1,11 +1,25 @@
+GIT
+  remote: git://github.com/gama/google-reader.git
+  revision: 8fee94a7339c3d055e7b2afef2b88b4d8d542e09
+  specs:
+    google-reader (0.1)
+      hashie (~> 0.4.0)
+      json (~> 1.4)
+      oauth (~> 0.4.0)
+      rack (~> 1.2)
+
 GEM
   remote: http://rubygems.org/
   specs:
     archive-tar-minitar (0.5.2)
     columnize (0.3.4)
+    hashie (0.4.0)
+    json (1.6.5)
     linecache19 (0.5.12)
       ruby_core_source (>= 0.1.4)
     nokogiri (1.5.0)
+    oauth (0.4.5)
+    rack (1.4.1)
     ruby-debug-base19 (0.11.25)
       columnize (>= 0.3.1)
       linecache19 (>= 0.5.11)
@@ -21,5 +35,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  google-reader!
   nokogiri
   ruby-debug19
